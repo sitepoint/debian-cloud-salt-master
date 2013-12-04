@@ -17,11 +17,3 @@ A repository that contains the deb packages must be specified via the
 $SALT_REPO environment variable, or it will default to:
 
     deb http://ftp.debian.org/debian/ ${distribution}-backports main
-
-In the case of Debian Backports, you should indicate the target release as
-well. This is handled via the $SALT_MASTER_TARGET_RELEASE environment variable.
-eg.
-
-    SALT_MASTER_TARGET_RELEASE=wheezy-backports ./build-debian-cloud ...
-
-The default is to use "${distribution}-backports", if unspecified.

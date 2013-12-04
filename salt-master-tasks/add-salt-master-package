@@ -1,14 +1,17 @@
 #!/bin/bash
 
-# Install the Salt Master package.
+# Take care of pacakge pinning.
+cat << EOF > "${imagedir}/etc/apt/preferences.d/01salt"
+Package: libzmq3 python-zmq salt-common salt-doc salt-master salt-cloud salt-cloud-doc
+Pin: release n=${codename}-backports
+Pin-Priority: 500
+EOF
 
-target_release="${SALT_MASTER_TARGET_RELEASE-${codename}-backports}"
-
+# Add the backports repository.
 echo "${SALT_REPO:-deb http://ftp.debian.org/debian/ ${codename}-backports main}" > \
     ${imagedir}/etc/apt/sources.list.d/${codename}-backports.list
 
+# Install the Salt Master package.
 chroot ${imagedir} apt-get update && \
-    chroot apt-get -y -t ${target_release} install salt-master || \
+    chroot apt-get -y install salt-master || \
     die "Error: salt-master failed installation"
-
-unset target_release
