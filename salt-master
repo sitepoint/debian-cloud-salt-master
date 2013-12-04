@@ -1,0 +1,7 @@
+#!/bin/bash
+
+insert_task_after ${TASK_PACKAGES} \
+    ${plugindir}/salt-master-tasks/add-salt-master-dependencies
+
+insert_task_after ${TASK_APT_UPGRADE} \
+    ${plugindir}/salt-master-tasks/add-salt-master-package

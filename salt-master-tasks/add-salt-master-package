@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Install the Salt Master package.
+
+target_release="${SALT_MASTER_TARGET_RELEASE-${codename}-backports}"
+
+echo "${SALT_REPO:-deb http://ftp.debian.org/debian/ ${codename}-backports main}" > \
+    ${imagedir}/etc/apt/sources.list.d/${codename}-backports.list
+
+chroot ${imagedir} apt-get update && \
+    chroot apt-get -y -t ${target_release} install salt-master || \
+    die "Error: salt-master failed installation"
+
+unset target_release

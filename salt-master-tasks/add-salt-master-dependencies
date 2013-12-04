@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# These packages are not strictly necessary, but states and pillar data or Salt
+# itself can optionally make use of them if they exist.
+packages+=('git-core')
+packages+=('python-yaml')
+packages+=('python-jinja2')
+packages+=('python-mako')
