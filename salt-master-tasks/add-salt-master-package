@@ -13,5 +13,5 @@ echo "${SALT_REPO:-deb http://ftp.debian.org/debian/ ${codename}-backports main}
 
 # Install the Salt Master package.
 chroot ${imagedir} apt-get update && \
-    chroot apt-get -y install salt-master || \
+    chroot ${imagedir} apt-get -y install salt-master || \
     die "Error: salt-master failed installation"
