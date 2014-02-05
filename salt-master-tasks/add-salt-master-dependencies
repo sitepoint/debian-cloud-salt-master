@@ -6,3 +6,7 @@ packages+=('git-core')
 packages+=('python-yaml')
 packages+=('python-jinja2')
 packages+=('python-mako')
+
+# Boto can apparently fail if the time is out of sync.
+packages+=('ntp')
+packages+=('ntpdate')
