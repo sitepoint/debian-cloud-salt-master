@@ -1,15 +1,57 @@
 #!/bin/bash
 
-# Take care of pacakge pinning.
-cat << EOF > "${imagedir}/etc/apt/preferences.d/01salt"
-Package: libzmq3 python-zmq salt-common salt-doc salt-master salt-cloud salt-cloud-doc
-Pin: release n=${codename}-backports
-Pin-Priority: 500
-EOF
+# Add SALT_REPO, or otherwise add the official SaltStack repository.
 
-# Add the backports repository.
-echo "${SALT_REPO:-deb http://ftp.debian.org/debian/ ${codename}-backports main}" > \
-    ${imagedir}/etc/apt/sources.list.d/${codename}-backports.list
+declare -r salt_apt_sources="${imagedir}/etc/apt/sources.list.d/saltstack.list"
+
+function apt_key_add()
+{
+    local -r key_name="debian-salt-team-joehealy.gpg.key"
+
+    wget -q -O "${imagedir}/root/${key_name}" \
+         "http://debian.saltstack.com/${key_name}"
+    echo "b702969447140d5553e31e9701be13ca11cc0a7ed5fe2b30acb849156756"\
+"0ee62f834772b5095d735dfcecb2384a5c1a20045f52861c417f50b68dd5ff4660e6 "\
+" /root/${key_name}" > "${imagedir}/root/${key_name}.sha512"
+
+    if ! chroot ${imagedir} sha512sum -c "/root/${key_name}.sha512"
+    then
+        die "Error: Unrecognised GPG key. Confirm validity and update SHA512."
+    else
+        chroot ${imagedir} apt-key add "/root/${key_name}"
+        rm -f "${imagedir}/root/${key_name}"
+    fi
+}
+
+echo -e "## Official SaltStack repository\n" >> "${salt_apt_sources}"
+
+if [ -n "${SALT_REPO}" ]
+then
+    echo "${SALT_REPO}" >> "${salt_apt_sources}"
+elif [ "${codename}" = "squeeze" ]
+then
+    apt_key_add
+    {
+        echo "deb http://debian.saltstack.com/debian squeeze-saltstack main"
+        echo "deb http://backports.debian.org/debian-backports" \
+             "squeeze-backports main contrib non-free"
+    } >> "${salt_apt_sources}"
+elif [ "${codename}" = "wheezy" ]
+then
+    apt_key_add
+    echo "deb http://debian.saltstack.com/debian wheezy-saltstack main" >> \
+         "${salt_apt_sources}"
+elif [ "${codename}" = "jessie" ]
+then
+    apt_key_add
+    echo "deb http://debian.saltstack.com/debian jessie-saltstack main" >> \
+         "${salt_apt_sources}"
+elif [ "${codename}" = "sid" ]
+then
+    apt_key_add
+    echo "deb http://debian.saltstack.com/debian unstable main" >> \
+         "${salt_apt_sources}"
+fi
 
 # Install the Salt Master package.
 chroot ${imagedir} apt-get update && \
